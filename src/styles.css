@@ -1,0 +1,169 @@
+:root {
+  --bg: #0f172a;
+  --fg: #e2e8f0;
+  --muted: #94a3b8;
+  --ok: #22c55e;
+  --bad: #ef4444;
+  --accent: #60a5fa;
+  --btn-bg: #1f2937;
+  --btn-bg-disabled: #111827;
+  --btn-border: #334155;
+}
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  background: radial-gradient(1200px 800px at 50% -10%, #1e293b, var(--bg));
+  color: var(--fg);
+}
+
+.container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.top {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px;
+  gap: 16px;
+}
+
+.toolbar {
+  align-self: stretch;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.level-label {
+  color: var(--muted);
+  font-size: 14px;
+  align-self: center;
+}
+
+.level-select {
+  appearance: none;
+  border: 1px solid var(--btn-border);
+  background: linear-gradient(180deg, #111827, var(--btn-bg));
+  color: var(--fg);
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.prompt {
+  color: var(--muted);
+  font-size: 20px;
+  letter-spacing: 0.02em;
+}
+
+.expr {
+  font-size: clamp(40px, 8vw, 96px);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.feedback {
+  font-size: 18px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.06);
+}
+.feedback.ok { color: var(--ok); }
+.feedback.bad { color: var(--bad); }
+
+/* Floating feedback overlay centered on screen without shifting layout */
+.feedback.floating {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  pointer-events: none; /* don't block clicks */
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+}
+
+/* Floating countdown timer (top-right) */
+.timer {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 1100;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--btn-border);
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-weight: 700;
+  color: var(--fg);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+}
+.timer.low { color: var(--bad); }
+
+.bottom {
+  flex: 1;
+  display: flex;
+  align-items: flex-start; /* move choices to top of bottom half */
+  justify-content: center;
+  padding-block-start: 12px; /* small space from the split */
+  padding-block-end: 24px;
+  padding-inline: 24px; /* symmetric left/right spacing so buttons never touch edges */
+}
+
+.choices {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)); /* keep side-by-side without overflow */
+  gap: 16px;
+  width: min(800px, 100%);
+  margin-inline: auto; /* center grid within bottom padding */
+}
+
+.choice {
+  appearance: none;
+  border: 1px solid var(--btn-border);
+  background: linear-gradient(180deg, #111827, var(--btn-bg));
+  color: var(--fg);
+  padding: 20px 16px;
+  border-radius: 14px;
+  font-size: clamp(20px, 3vw, 36px);
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 120ms ease, border-color 120ms ease, background 120ms ease, opacity 120ms ease;
+}
+.choice:hover { transform: translateY(-2px); border-color: var(--accent); }
+.choice:active { transform: translateY(0); }
+.choice.disabled,
+.choice:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  background: var(--btn-bg-disabled);
+}
+
+/* Visual cue for negative numbers */
+.choice.neg { color: var(--bad); }
+
+/* Keep choices side-by-side even on small viewports. */
+
+/* Streak counter fixed at bottom center */
+.streak {
+  position: fixed;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1100;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--btn-border);
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-weight: 700;
+  color: var(--fg);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+}
+.streak.on { color: var(--ok); }
