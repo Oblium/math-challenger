@@ -167,3 +167,9 @@ body {
   box-shadow: 0 6px 20px rgba(0,0,0,0.25);
 }
 .streak.on { color: var(--ok); }
+
+/* Progressive streak colors */
+.streak.orange { color: #f59e0b; }     /* orange (amber-500) */
+.streak.yellow { color: #facc15; }     /* yellow-400 */
+.streak.lightgreen { color: #86efac; } /* green-300 */
+.streak.green { color: var(--ok); }    /* default ok green */

@@ -581,7 +581,9 @@ export default function Game() {
           ))}
         </div>
         <div
-          className={`streak ${streak > 0 ? 'on' : ''}`}
+          className={`streak ${streak > 0 ? 'on' : ''} ${
+            streak >= 18 ? 'green' : streak >= 15 ? 'lightgreen' : streak >= 10 ? 'yellow' : streak >= 5 ? 'orange' : ''
+          }`}
           role="status"
           aria-live="polite"
           aria-label={
