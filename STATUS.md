@@ -118,6 +118,11 @@ Notes on static hosting and local file usage:
 ## UI: Streak Display
 - Levels 1–9: streak shows as `x/20` to indicate progress to the next level.
 - Level 10 (final): shows only the streak number; displays a 🎉 when the streak goes above 20.
+- Streak color thresholds (progressive):
+  - 5: orange
+  - 10: yellow
+  - 15: light green
+  - 18: green
 - Streak-based progression with level-up message and delayed advance; level and streak persist via localStorage.
 - Wrong-answer generation improved for levels 3+ (last-digit bias and distance cap).
 - Tooling and tests still minimal; good candidates for next iteration.
