@@ -7,8 +7,8 @@ type Choice = {
 };
 
 type Feedback = { kind: 'positive' | 'negative'; text: string } | null;
-type Level = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
-type Operator = '+' | '-';
+type Level = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
+type Operator = '+' | '-' | '*';
 
 function randInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -205,7 +205,7 @@ export default function Game() {
     try {
       const stored = localStorage.getItem('mc_level');
       const n = Number(stored);
-      if (!Number.isNaN(n) && n >= 1 && n <= 9) return n as Level;
+      if (!Number.isNaN(n) && n >= 1 && n <= 10) return n as Level;
     } catch {}
     return 1;
   });
@@ -236,6 +236,28 @@ export default function Game() {
     } else if (level === 9) {
       const [a, b] = operands;
       return (a ?? 0) * (b ?? 0);
+    } else if (level === 10) {
+      // Evaluate with precedence: * before + and -
+      if (operands.length === 0) return 0;
+      // First, collapse multiplications
+      const nums: number[] = [operands[0] ?? 0];
+      const ops: ('+' | '-')[] = [];
+      for (let i = 1; i < operands.length; i++) {
+        const op = operators[i - 1]!;
+        const val = operands[i] ?? 0;
+        if (op === '*') {
+          nums[nums.length - 1] = (nums[nums.length - 1] ?? 0) * val;
+        } else if (op === '+' || op === '-') {
+          nums.push(val);
+          ops.push(op);
+        }
+      }
+      // Then apply + and - left-to-right
+      let total = nums[0] ?? 0;
+      for (let i = 1; i < nums.length; i++) {
+        total = ops[i - 1] === '+' ? total + (nums[i] ?? 0) : total - (nums[i] ?? 0);
+      }
+      return total;
     }
     return operands.reduce((sum, n) => sum + n, 0);
   }, [operands, operators, level]);
@@ -252,12 +274,13 @@ export default function Game() {
   };
 
   const startTimerIfNeeded = () => {
-    // Levels 7 and 8 use a countdown timer
-    if (level !== 7 && level !== 8) {
+    // Levels 7, 8 (20s) and 10 (13s) use a countdown timer
+    if (level !== 7 && level !== 8 && level !== 10) {
       setTimeLeft(null);
       return;
     }
-    setTimeLeft(20);
+    const initial = level === 10 ? 13 : 20;
+    setTimeLeft(initial);
     intervalRef.current = window.setInterval(() => {
       setTimeLeft((prev) => {
         const next = (prev ?? 0) - 1;
@@ -380,6 +403,47 @@ export default function Game() {
       return;
     }
 
+    if (level === 10) {
+      // 2 or 3 numbers between 1 and 30, using +, -, * with precedence
+      const count: 2 | 3 = Math.random() < 0.5 ? 2 : 3;
+      const nums: number[] = [];
+      const ops: Operator[] = [];
+      for (let i = 0; i < count; i++) nums.push(randInt(1, 30));
+      for (let i = 1; i < count; i++) {
+        const r = Math.random();
+        const op: Operator = r < 1 / 3 ? '+' : r < 2 / 3 ? '-' : '*';
+        ops.push(op);
+      }
+      setOperands(nums);
+      setOperators(ops);
+      // Compute correct answer with precedence (same logic as above)
+      const numsPrec: number[] = [nums[0] ?? 0];
+      const opsPrec: ('+' | '-')[] = [];
+      for (let i = 1; i < nums.length; i++) {
+        const op = ops[i - 1]!;
+        const val = nums[i] ?? 0;
+        if (op === '*') {
+          numsPrec[numsPrec.length - 1] = (numsPrec[numsPrec.length - 1] ?? 0) * val;
+        } else {
+          numsPrec.push(val);
+          opsPrec.push(op as '+' | '-');
+        }
+      }
+      let correctVal = numsPrec[0] ?? 0;
+      for (let i = 1; i < numsPrec.length; i++) {
+        correctVal = opsPrec[i - 1] === '+' ? correctVal + (numsPrec[i] ?? 0) : correctVal - (numsPrec[i] ?? 0);
+      }
+      const minVal = -900;
+      const maxVal = 930;
+      let wrongs = generateWrongChoices(correctVal, minVal, maxVal);
+      wrongs = adjustWrongChoicesForLastDigit(correctVal, wrongs, minVal, maxVal, level >= 3);
+      const values = shuffle([correctVal, ...wrongs]);
+      const nextChoices: Choice[] = values.map((v, idx) => ({ id: `${Date.now()}-${idx}-${v}` , value: v, disabled: false }));
+      setChoices(nextChoices);
+      startTimerIfNeeded();
+      return;
+    }
+
     const maxOperand = level === 1 ? 9 : level === 2 ? 50 : 99;
     const count = level === 3 ? (Math.random() < 0.5 ? 2 : 3) : 2;
     const nums: number[] = Array.from({ length: count }, () => randInt(0, maxOperand));
@@ -419,13 +483,13 @@ export default function Game() {
       setLocked(true);
       clearTimers();
       const nextStreak = streak + 1;
-      const willLevelUp = nextStreak >= 10 && level < 9;
+      const willLevelUp = nextStreak >= 10 && level < 10;
       if (willLevelUp) {
         // Special feedback and shorter delay before level up
         setFeedback({ kind: 'positive', text: 'you made it to the next level!' });
         setStreak(0);
         timeoutRef.current = window.setTimeout(() => {
-          setLevel((l) => (l < 9 ? ((l + 1) as Level) : l));
+          setLevel((l) => (l < 10 ? ((l + 1) as Level) : l));
         }, 500);
       } else {
         setFeedback({ kind: 'positive', text: 'Correct! 🎉' });
@@ -462,6 +526,7 @@ export default function Game() {
             <option value={7}>7: Level 6 + 20s timer</option>
             <option value={8}>8: Level 7 with 1–99</option>
             <option value={9}>9: Multiply 0–9</option>
+            <option value={10}>10: 2–3 nums 1–30 with +/−/× (× before +/−)</option>
           </select>
         </div>
         <div className="operation" aria-live="polite" aria-atomic="true">
@@ -473,10 +538,12 @@ export default function Game() {
               ? `${operands[0]} ${operators[0] === '-' ? '−' : '+'} ${operands[1]}${operands[2] !== undefined ? ` ${operators[1] === '-' ? '−' : '+'} ${operands[2]}` : ''} = ?`
               : level === 9 && operands.length >= 2
               ? `${operands[0]} × ${operands[1]} = ?`
+              : level === 10 && operands.length >= 2
+              ? `${operands[0]} ${operators[0] === '*' ? '×' : operators[0] === '-' ? '−' : '+'} ${operands[1]}${operands[2] !== undefined ? ` ${operators[1] === '*' ? '×' : operators[1] === '-' ? '−' : '+'} ${operands[2]}` : ''} = ?`
               : `${operands.join(' + ')} = ?`}
           </div>
         </div>
-        {(level === 7 || level === 8) && timeLeft !== null && (
+        {(level === 7 || level === 8 || level === 10) && timeLeft !== null && (
           <div
             className={`timer ${timeLeft <= 5 ? 'low' : ''}`}
             role="status"

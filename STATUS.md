@@ -32,6 +32,7 @@ This document summarizes the current state of the project and outlines opportuni
   - Level 7: same as 6 with a 20s countdown timer.
   - Level 8: same as 7 but operands drawn from [1..99].
   - Level 9: multiplication of two numbers in [0..9].
+  - Level 10: two or three numbers in [1..30] with +/−/× and operator precedence (× before +/−), with a 13s countdown timer.
 - Answer choices:
   - Always three options (1 correct + 2 distractors).
   - For levels 3+: wrong choices are biased so that 0/1/2 share the same last digit as the correct answer with probabilities 10%/45%/45% respectively.
@@ -40,7 +41,7 @@ This document summarizes the current state of the project and outlines opportuni
   - Correct: shows "Correct! 🎉", locks inputs, and advances after ~800ms.
   - Level-up: after a streak of 10, shows "you made it to the next level!" and advances after ~500ms.
   - Wrong: shows "Try again…" and disables the clicked option.
-  - Timers: 20s countdown on levels 7 and 8; timeouts reset streak.
+  - Timers: 20s countdown on levels 7 and 8; 13s countdown on level 10; timeouts reset streak.
 - Persistence:
   - `level` and `streak` are saved in `localStorage` and restored on refresh.
 - Accessibility:
@@ -68,7 +69,7 @@ Notes on static hosting and local file usage:
 - No CI configured.
 
 ## Known Limitations / Gaps
-- No division or mixed-operation mode with multiplication yet (multiplication is only Level 9).
+- No division yet; mixed-operation mode with multiplication exists at Level 10 only.
 - Scoring is streak-based only; no points/combos/leaderboard. Persistence is limited to `level` and `streak`.
 - No sound effects or rich animations for feedback or level-up.
 - No keyboard shortcuts (number keys/Enter/Escape) or explicit focus management on new question.
@@ -112,7 +113,7 @@ Notes on static hosting and local file usage:
 - Build: `npm run build` (open `dist/index.html` directly if desired)
 
 ## Status Summary
-- Levels 1–9 implemented (addition, subtraction, mixed +/- with timers on 7–8, and multiplication at 9).
+- Levels 1–10 implemented (addition, subtraction, mixed +/- with timers on 7–8, multiplication at 9, and Level 10 with mixed +/−/× using precedence and a 13s timer).
 - Streak-based progression with level-up message and delayed advance; level and streak persist via localStorage.
 - Wrong-answer generation improved for levels 3+ (last-digit bias and distance cap).
 - Tooling and tests still minimal; good candidates for next iteration.
