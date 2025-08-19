@@ -514,7 +514,10 @@ export default function Game() {
             id="level-select"
             className="level-select"
             value={level}
-            onChange={(e) => setLevel(Number(e.target.value) as Level)}
+            onChange={(e) => {
+              setLevel(Number(e.target.value) as Level);
+              setStreak(0);
+            }}
             aria-label="Select difficulty level"
           >
             <option value={1}>1: Single-digit sums</option>
