@@ -39,7 +39,7 @@ This document summarizes the current state of the project and outlines opportuni
   - A distance cap keeps wrong answers “near” the correct answer; the cap scales with range but never exceeds 40. The cap is enforced first, then the last-digit bias (pickers respect the cap).
 - Feedback & flow:
   - Correct: shows "Correct! 🎉", locks inputs, and advances after ~800ms.
-  - Level-up: after a streak of 10, shows "you made it to the next level!" and advances after ~500ms.
+  - Level-up: after a streak of 20, shows "you made it to the next level!" and advances after ~500ms.
   - Wrong: shows "Try again…" and disables the clicked option.
   - Timers: 20s countdown on levels 7 and 8; 13s countdown on level 10; timeouts reset streak.
 - Persistence:
@@ -113,7 +113,11 @@ Notes on static hosting and local file usage:
 - Build: `npm run build` (open `dist/index.html` directly if desired)
 
 ## Status Summary
-- Levels 1–10 implemented (addition, subtraction, mixed +/- with timers on 7–8, multiplication at 9, and Level 10 with mixed +/−/× using precedence and a 13s timer).
+- Levels 1–10 implemented (addition, subtraction, mixed +/- with timers on 7–8, multiplication at 9, and Level 10 with mixed +/−/× using precedence and a 13s timer). Progression to the next level requires a streak of 20 (except on the final level).
+
+## UI: Streak Display
+- Levels 1–9: streak shows as `x/20` to indicate progress to the next level.
+- Level 10 (final): shows only the streak number; displays a 🎉 when the streak goes above 20.
 - Streak-based progression with level-up message and delayed advance; level and streak persist via localStorage.
 - Wrong-answer generation improved for levels 3+ (last-digit bias and distance cap).
 - Tooling and tests still minimal; good candidates for next iteration.

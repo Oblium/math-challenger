@@ -483,7 +483,7 @@ export default function Game() {
       setLocked(true);
       clearTimers();
       const nextStreak = streak + 1;
-      const willLevelUp = nextStreak >= 10 && level < 10;
+      const willLevelUp = nextStreak >= 20 && level < 10;
       if (willLevelUp) {
         // Special feedback and shorter delay before level up
         setFeedback({ kind: 'positive', text: 'you made it to the next level!' });
@@ -581,9 +581,14 @@ export default function Game() {
           className={`streak ${streak > 0 ? 'on' : ''}`}
           role="status"
           aria-live="polite"
-          aria-label={`Current streak: ${streak}`}
+          aria-label={
+            level < 10
+              ? `Current streak: ${streak} out of 20`
+              : `Current streak: ${streak}${streak > 20 ? ' with celebration' : ''}`
+          }
         >
-          Streak: {streak}
+          Streak: {level < 10 ? `${streak}/20` : `${streak}`}
+          {level === 10 && streak > 20 ? ' 🎉' : ''}
         </div>
       </main>
     </div>
