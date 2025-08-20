@@ -6,7 +6,9 @@ import {
   View, 
   TouchableOpacity, 
   Alert,
-  Dimensions 
+  Dimensions,
+  TextInput,
+  Keyboard
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { 
@@ -27,9 +29,11 @@ export default function App() {
   const [feedback, setFeedback] = useState<Feedback>(null);
   const [locked, setLocked] = useState(false);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  const [inputValue, setInputValue] = useState<string>('');
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const feedbackTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const inputRef = useRef<TextInput>(null);
 
   // Load saved state
   useEffect(() => {
@@ -40,8 +44,10 @@ export default function App() {
         
         if (savedLevel) {
           const parsedLevel = parseInt(savedLevel) as Level;
-          setLevel(parsedLevel);
-          setProblem(newProblem(parsedLevel));
+          if (parsedLevel >= 1 && parsedLevel <= 20) {
+            setLevel(parsedLevel);
+            setProblem(newProblem(parsedLevel));
+          }
         }
         if (savedStreak) {
           setStreak(parseInt(savedStreak));
@@ -106,6 +112,7 @@ export default function App() {
     setFeedback(null);
     setLocked(false);
     setTimeLeft(null);
+    setInputValue(''); // Reset input for levels 11-20
     setProblem(newProblem(level));
     
     if (timerRef.current) {
@@ -115,6 +122,13 @@ export default function App() {
     if (feedbackTimeoutRef.current) {
       clearTimeout(feedbackTimeoutRef.current);
       feedbackTimeoutRef.current = null;
+    }
+
+    // Focus input for levels 11-20 after a short delay
+    if (level >= 11 && level <= 20) {
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
     }
   };
 
@@ -129,7 +143,7 @@ export default function App() {
       const newStreak = streak + 1;
       setStreak(newStreak);
       
-      if (newStreak >= 20 && level < 10) {
+      if (newStreak >= 20 && level < 20) {
         // Level up
         const newLevel = (level + 1) as Level;
         setLevel(newLevel);
@@ -149,6 +163,11 @@ export default function App() {
       // Wrong answer
       setFeedback({ kind: 'negative', text: 'Try again…' });
       
+      // Reset streak to 0 on wrong answer
+      const newStreak = 0;
+      setStreak(newStreak);
+      saveState(level, newStreak);
+      
       // Disable this choice
       setProblem(prev => ({
         ...prev,
@@ -159,7 +178,82 @@ export default function App() {
     }
   };
 
-  const levelOptions = Array.from({ length: 10 }, (_, i) => i + 1) as Level[];
+  const processInputAnswer = (value: string) => {
+    if (locked) return;
+    
+    const userAnswer = parseInt(value);
+    if (isNaN(userAnswer)) return;
+    
+    if (userAnswer === problem.result) {
+      // Correct answer
+      setFeedback({ kind: 'positive', text: 'Correct! 🎉' });
+      setLocked(true);
+      Keyboard.dismiss();
+      
+      const newStreak = streak + 1;
+      setStreak(newStreak);
+      
+      if (newStreak >= 20 && level < 20) {
+        // Level up
+        const newLevel = (level + 1) as Level;
+        setLevel(newLevel);
+        saveState(newLevel, 0);
+        setStreak(0);
+        
+        Alert.alert(
+          'Level Up!',
+          `You made it to level ${newLevel}!`,
+          [{ text: 'Continue', onPress: generateNewProblem }]
+        );
+      } else {
+        saveState(level, newStreak);
+        feedbackTimeoutRef.current = setTimeout(generateNewProblem, 800);
+      }
+    } else {
+      // Wrong answer
+      setFeedback({ kind: 'negative', text: 'Try again…' });
+      
+      // Reset streak to 0 on wrong answer
+      const newStreak = 0;
+      setStreak(newStreak);
+      saveState(level, newStreak);
+      
+      // Clear input and refocus
+      setInputValue('');
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 50);
+    }
+  };
+
+  const handleInputChange = (value: string) => {
+    setInputValue(value);
+    
+    // Auto-submit when input length matches result length
+    const correctLength = Math.abs(problem.result).toString().length;
+    if (value.length === correctLength && value.length > 0) {
+      // Small delay to allow user to see what they typed
+      setTimeout(() => {
+        processInputAnswer(value);
+      }, 100);
+    }
+  };
+
+  const handleInputSubmit = () => {
+    processInputAnswer(inputValue);
+  };
+
+  // Add effect to focus input when switching to input levels
+  useEffect(() => {
+    if (level >= 11 && level <= 20) {
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+    }
+  }, [level]);
+
+  const isInputLevel = level >= 11 && level <= 20;
+  const levelOptions = Array.from({ length: 20 }, (_, i) => i + 1) as Level[];
 
   return (
     <View style={styles.container}>
@@ -195,7 +289,7 @@ export default function App() {
           </TouchableOpacity>
           
           <Text style={[styles.streak, { color: getStreakColor(streak) }]}>
-            {level === 10 ? (
+            {level === 20 ? (
               streak > 20 ? `${streak} 🎉` : streak.toString()
             ) : (
               `${streak}/20`
@@ -224,27 +318,60 @@ export default function App() {
         )}
       </View>
 
-      {/* Choices */}
-      <View style={styles.choicesArea}>
-        {problem.choices.map(choice => (
+      {/* Input or Choices */}
+      {isInputLevel ? (
+        <View style={styles.inputArea}>
+          <TextInput
+            ref={inputRef}
+            style={styles.answerInput}
+            value={inputValue}
+            onChangeText={handleInputChange}
+            placeholder="Enter answer"
+            placeholderTextColor="#6b7280"
+            keyboardType="numeric"
+            editable={!locked}
+            returnKeyType="done"
+            onSubmitEditing={handleInputSubmit}
+            selectTextOnFocus
+          />
           <TouchableOpacity
-            key={choice.id}
             style={[
-              styles.choiceButton,
-              choice.disabled && styles.choiceDisabled
+              styles.submitButton,
+              (!inputValue.trim() || locked) && styles.submitButtonDisabled
             ]}
-            onPress={() => handleChoice(choice)}
-            disabled={locked || choice.disabled}
+            onPress={handleInputSubmit}
+            disabled={!inputValue.trim() || locked}
           >
             <Text style={[
-              styles.choiceText,
-              choice.disabled && styles.choiceTextDisabled
+              styles.submitButtonText,
+              (!inputValue.trim() || locked) && styles.submitButtonTextDisabled
             ]}>
-              {choice.value}
+              Submit
             </Text>
           </TouchableOpacity>
-        ))}
-      </View>
+        </View>
+      ) : (
+        <View style={styles.choicesArea}>
+          {problem.choices.map(choice => (
+            <TouchableOpacity
+              key={choice.id}
+              style={[
+                styles.choiceButton,
+                choice.disabled && styles.choiceDisabled
+              ]}
+              onPress={() => handleChoice(choice)}
+              disabled={locked || choice.disabled}
+            >
+              <Text style={[
+                styles.choiceText,
+                choice.disabled && styles.choiceTextDisabled
+              ]}>
+                {choice.value}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
     </View>
   );
 }
@@ -308,6 +435,45 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginTop: 20,
     textAlign: 'center',
+  },
+  inputArea: {
+    paddingHorizontal: 20,
+    paddingBottom: 50,
+    alignItems: 'center',
+    gap: 16,
+  },
+  answerInput: {
+    backgroundColor: '#374151',
+    color: '#ffffff',
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    width: '100%',
+    maxWidth: 300,
+    minHeight: 80,
+  },
+  submitButton: {
+    backgroundColor: '#3b82f6',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    minWidth: 120,
+  },
+  submitButtonDisabled: {
+    backgroundColor: '#1f2937',
+    opacity: 0.5,
+  },
+  submitButtonText: {
+    color: '#ffffff',
+    fontSize: 18,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  submitButtonTextDisabled: {
+    color: '#6b7280',
   },
   choicesArea: {
     flexDirection: 'row',
