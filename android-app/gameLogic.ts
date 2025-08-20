@@ -5,7 +5,7 @@ export type Choice = {
 };
 
 export type Feedback = { kind: 'positive' | 'negative'; text: string } | null;
-export type Level = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
+export type Level = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20;
 export type Operator = '+' | '-' | '*';
 
 export function randInt(min: number, max: number) {
@@ -211,7 +211,14 @@ export function evaluateExpression(terms: number[], operators: Operator[]): numb
   return total;
 }
 
-export function newProblem(level: Level) {
+export function newProblem(level: Level): {
+  terms: number[];
+  operators: Operator[];
+  result: number;
+  choices: Choice[];
+  hasTimer: boolean;
+  timerSeconds: number;
+} {
   let terms: number[] = [];
   let operators: Operator[] = [];
   let result: number;
@@ -366,6 +373,182 @@ export function newProblem(level: Level) {
       timerSeconds = 13;
       break;
     }
+
+    // Levels 11-20 replicate levels 1-10 but use input instead of choices
+    case 11: {
+      terms = [randInt(0, 9), randInt(0, 9)];
+      operators = ['+'];
+      result = terms[0]! + terms[1]!;
+      minChoice = 0;
+      maxChoice = 18;
+      hasTimer = false;
+      timerSeconds = 0;
+      break;
+    }
+
+    case 12: {
+      terms = [randInt(0, 50), randInt(0, 50)];
+      operators = ['+'];
+      result = terms[0]! + terms[1]!;
+      minChoice = 0;
+      maxChoice = 100;
+      hasTimer = false;
+      timerSeconds = 0;
+      break;
+    }
+
+    case 13: {
+      const numTerms = randInt(2, 3);
+      terms = Array.from({ length: numTerms }, () => randInt(0, 99));
+      operators = Array.from({ length: numTerms - 1 }, () => '+' as Operator);
+      result = terms.reduce((sum, term) => sum + term, 0);
+      minChoice = 0;
+      maxChoice = 297;
+      hasTimer = false;
+      timerSeconds = 0;
+      break;
+    }
+
+    case 14: {
+      const a = randInt(4, 20);
+      const b = randInt(2, a - 1);
+      terms = [a, b];
+      operators = ['-'];
+      result = a - b;
+      minChoice = 1;
+      maxChoice = 18;
+      hasTimer = false;
+      timerSeconds = 0;
+      break;
+    }
+
+    case 15: {
+      const numTerms = randInt(2, 3);
+      let runningTotal = randInt(5, 15);
+      terms = [runningTotal];
+      
+      for (let i = 1; i < numTerms; i++) {
+        const op: Operator = Math.random() < 0.5 ? '+' : '-';
+        let operand: number;
+        
+        if (op === '-') {
+          operand = randInt(1, Math.min(20, runningTotal));
+        } else {
+          operand = randInt(1, 20);
+        }
+        
+        terms.push(operand);
+        operators.push(op);
+        runningTotal = op === '+' ? runningTotal + operand : runningTotal - operand;
+      }
+      
+      result = runningTotal;
+      minChoice = 0;
+      maxChoice = 75;
+      hasTimer = false;
+      timerSeconds = 0;
+      break;
+    }
+
+    case 16: {
+      const numTerms = randInt(2, 3);
+      terms = [randInt(0, 20)];
+      
+      for (let i = 1; i < numTerms; i++) {
+        const op: Operator = Math.random() < 0.5 ? '+' : '-';
+        const operand = randInt(0, 20);
+        terms.push(operand);
+        operators.push(op);
+      }
+      
+      result = evaluateExpression(terms, operators);
+      minChoice = -60;
+      maxChoice = 60;
+      hasTimer = false;
+      timerSeconds = 0;
+      break;
+    }
+
+    case 17: {
+      const numTerms = randInt(2, 3);
+      terms = [randInt(0, 20)];
+      
+      for (let i = 1; i < numTerms; i++) {
+        const op: Operator = Math.random() < 0.5 ? '+' : '-';
+        const operand = randInt(0, 20);
+        terms.push(operand);
+        operators.push(op);
+      }
+      
+      result = evaluateExpression(terms, operators);
+      minChoice = -60;
+      maxChoice = 60;
+      hasTimer = true;
+      timerSeconds = 25; // 20 + 5
+      break;
+    }
+
+    case 18: {
+      const numTerms = randInt(2, 3);
+      terms = [randInt(1, 99)];
+      
+      for (let i = 1; i < numTerms; i++) {
+        const op: Operator = Math.random() < 0.5 ? '+' : '-';
+        const operand = randInt(1, 99);
+        terms.push(operand);
+        operators.push(op);
+      }
+      
+      result = evaluateExpression(terms, operators);
+      minChoice = -198;
+      maxChoice = 297;
+      hasTimer = true;
+      timerSeconds = 25; // 20 + 5
+      break;
+    }
+
+    case 19: {
+      terms = [randInt(0, 9), randInt(0, 9)];
+      operators = ['*'];
+      result = terms[0]! * terms[1]!;
+      minChoice = 0;
+      maxChoice = 81;
+      hasTimer = false;
+      timerSeconds = 0;
+      break;
+    }
+
+    case 20: {
+      const numTerms = randInt(2, 3);
+      terms = [randInt(1, 30)];
+      
+      for (let i = 1; i < numTerms; i++) {
+        const ops: Operator[] = ['+', '-', '*'];
+        const op = ops[randInt(0, 2)]!;
+        const operand = randInt(1, 30);
+        terms.push(operand);
+        operators.push(op);
+      }
+      
+      result = evaluateExpression(terms, operators);
+      minChoice = -59;
+      maxChoice = 930;
+      hasTimer = true;
+      timerSeconds = 18; // 13 + 5
+      break;
+    }
+  }
+
+  // Levels 11-20 use input instead of choices
+  if (level >= 11 && level <= 20) {
+    return {
+      terms,
+      operators,
+      result,
+      choices: [],
+      hasTimer,
+      timerSeconds,
+    };
   }
 
   const wrongChoices = level >= 3 

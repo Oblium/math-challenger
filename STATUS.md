@@ -48,25 +48,38 @@ This document summarizes the current state of the project and outlines opportuni
 
 ## Current Functionality
 - Levels and problem generation:
-  - Level 1: two operands in [0..9], addition.
-  - Level 2: two operands in [0..50], addition.
-  - Level 3: two or three operands in [0..99], addition.
-  - Level 4: a − b with a in [4..20], b in [2..(a−1)] (non-negative result).
-  - Level 5: two or three numbers with +/-; first number in [5..15], subsequent in [1..20]; running total kept non-negative.
-  - Level 6: two or three numbers in [0..20] with +/-; negatives allowed.
-  - Level 7: same as 6 with a 20s countdown timer.
-  - Level 8: same as 7 but operands drawn from [1..99].
-  - Level 9: multiplication of two numbers in [0..9].
-  - Level 10: two or three numbers in [1..30] with +/−/× and operator precedence (× before +/−), with a 13s countdown timer.
-- Answer choices:
-  - Always three options (1 correct + 2 distractors).
-  - For levels 3+: wrong choices are biased so that 0/1/2 share the same last digit as the correct answer with probabilities 10%/45%/45% respectively.
-  - A distance cap keeps wrong answers “near” the correct answer; the cap scales with range but never exceeds 40. The cap is enforced first, then the last-digit bias (pickers respect the cap).
+  - **Levels 1-10 (Multiple Choice):**
+    - Level 1: two operands in [0..9], addition.
+    - Level 2: two operands in [0..50], addition.
+    - Level 3: two or three operands in [0..99], addition.
+    - Level 4: a − b with a in [4..20], b in [2..(a−1)] (non-negative result).
+    - Level 5: two or three numbers with +/-; first number in [5..15], subsequent in [1..20]; running total kept non-negative.
+    - Level 6: two or three numbers in [0..20] with +/-; negatives allowed.
+    - Level 7: same as 6 with a 20s countdown timer.
+    - Level 8: same as 7 but operands drawn from [1..99].
+    - Level 9: multiplication of two numbers in [0..9].
+    - Level 10: two or three numbers in [1..30] with +/−/× and operator precedence (× before +/−), with a 13s countdown timer.
+  - **Levels 11-20 (Text Input):**
+    - Level 11: replicates Level 1 with text input (type="tel").
+    - Level 12: replicates Level 2 with text input.
+    - Level 13: replicates Level 3 with text input.
+    - Level 14: replicates Level 4 with text input.
+    - Level 15: replicates Level 5 with text input.
+    - Level 16: replicates Level 6 with text input.
+    - Level 17: replicates Level 7 with text input and 25s timer (+5s).
+    - Level 18: replicates Level 8 with text input and 25s timer (+5s).
+    - Level 19: replicates Level 9 with text input.
+    - Level 20: replicates Level 10 with text input and 18s timer (+5s).
+- Answer input methods:
+  - **Levels 1-10**: Multiple choice with three options (1 correct + 2 distractors).
+    - For levels 3+: wrong choices are biased so that 0/1/2 share the same last digit as the correct answer with probabilities 10%/45%/45% respectively.
+    - A distance cap keeps wrong answers "near" the correct answer; the cap scales with range but never exceeds 40. The cap is enforced first, then the last-digit bias (pickers respect the cap).
+  - **Levels 11-20**: Text input field with submit button, using input type="tel" for numeric entry.
 - Feedback & flow:
   - Correct: shows "Correct! 🎉", locks inputs, and advances after ~800ms.
   - Level-up: after a streak of 20, shows "you made it to the next level!" and advances after ~500ms.
-  - Wrong: shows "Try again…" and disables the clicked option.
-  - Timers: 20s countdown on levels 7 and 8; 13s countdown on level 10; timeouts reset streak.
+  - Wrong: shows "Try again…" and disables the clicked option (levels 1-10) or clears the input field (levels 11-20).
+  - Timers: 20s countdown on levels 7 and 8; 13s countdown on level 10; 25s countdown on levels 17 and 18; 18s countdown on level 20; timeouts reset streak.
 - Persistence:
   - `level` and `streak` are saved in `localStorage` and restored on refresh.
 - Accessibility:
@@ -158,17 +171,18 @@ Notes on static hosting and local file usage:
 ## Status Summary
 - **Multi-Platform:** Web app and Android app both fully functional
 - **Shared Logic:** Game mechanics centralized in `common/` for consistency
-- **Complete Feature Set:** All 10 levels implemented across both platforms
-  - Levels 1–10: addition, subtraction, mixed +/-, multiplication, and precedence
-  - Timers on levels 7–8 (20s) and level 10 (13s)
+- **Complete Feature Set:** All 20 levels implemented across both platforms
+  - Levels 1–10: addition, subtraction, mixed +/-, multiplication, and precedence (multiple choice)
+  - Levels 11–20: same problem types as 1–10 but with text input (type="tel")
+  - Timers on levels 7–8 (20s), 10 (13s), 17–18 (25s), and 20 (18s)
   - Streak progression (20 correct answers to advance)
 - **Platform-Specific Features:**
   - Web: localStorage persistence, keyboard/mouse input
   - Android: AsyncStorage persistence, touch-optimized UI
 
 ## UI: Streak Display
-- Levels 1–9: streak shows as `x/20` to indicate progress to the next level.
-- Level 10 (final): shows only the streak number; displays a 🎉 when the streak goes above 20.
+- Levels 1–19: streak shows as `x/20` to indicate progress to the next level.
+- Level 20 (final): shows only the streak number; displays a 🎉 when the streak goes above 20.
 - Streak color thresholds (progressive):
   - 5: orange
   - 10: yellow
