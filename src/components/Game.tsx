@@ -35,6 +35,7 @@ export default function Game() {
     return 0;
   });
   const [inputValue, setInputValue] = useState<string>('');
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const correct = useMemo(() => {
     if (level === 4 || level === 14) {
@@ -138,6 +139,13 @@ export default function Game() {
     if (problem.hasTimer) {
       startTimerIfNeeded();
     }
+
+    // Focus input for levels 11-20 after a short delay
+    if (level >= 11 && level <= 20) {
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+    }
   }, [level]);
 
   useEffect(() => {
@@ -158,6 +166,15 @@ export default function Game() {
       localStorage.setItem('mc_streak', String(streak));
     } catch {}
   }, [streak]);
+
+  // Focus input when switching to input levels
+  useEffect(() => {
+    if (level >= 11 && level <= 20) {
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+    }
+  }, [level]);
 
   const onChoiceClick = (c: Choice) => {
     if (locked || c.disabled) return;
@@ -187,11 +204,10 @@ export default function Game() {
     }
   };
 
-  const onInputSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const processInputAnswer = (value: string) => {
     if (locked) return;
     
-    const userAnswer = parseInt(inputValue);
+    const userAnswer = parseInt(value);
     if (isNaN(userAnswer)) return;
     
     if (userAnswer === correct) {
@@ -217,6 +233,29 @@ export default function Game() {
       setFeedback({ kind: 'negative', text: 'Try again…' });
       setStreak(0);
       setInputValue(''); // Clear input on wrong answer
+      // Refocus input after clearing
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 50);
+    }
+  };
+
+  const onInputSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    processInputAnswer(inputValue);
+  };
+
+  const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setInputValue(value);
+    
+    // Auto-submit when input length matches result length
+    const correctLength = Math.abs(correct).toString().length;
+    if (value.length === correctLength && value.length > 0) {
+      // Small delay to allow user to see what they typed
+      setTimeout(() => {
+        processInputAnswer(value);
+      }, 100);
     }
   };
 
@@ -290,9 +329,10 @@ export default function Game() {
         {isInputLevel ? (
           <form onSubmit={onInputSubmit} className="input-form">
             <input
+              ref={inputRef}
               type="tel"
               value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
+              onChange={onInputChange}
               placeholder="Enter answer"
               disabled={locked}
               className="answer-input"
