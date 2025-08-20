@@ -16,7 +16,7 @@ import {
   type Level, 
   type Choice, 
   type Feedback 
-} from '../common/src/gameLogic';
+} from './gameLogic';
 
 const { width, height } = Dimensions.get('window');
 

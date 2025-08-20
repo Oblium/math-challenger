@@ -4,10 +4,10 @@ import {
   formatExpression, 
   getStreakColor,
   type Level, 
-  type Choice, 
+  type Choice,
   type Feedback,
   type Operator 
-} from '../../common/src/gameLogic';
+} from '../../android-app/gameLogic';
 
 export default function Game() {
   const [operands, setOperands] = useState<number[]>([]);

@@ -7,8 +7,7 @@ import {
   formatExpression,
   getStreakColor,
   type Level,
-  type Operator,
-} from './gameLogic'
+} from '../../android-app/gameLogic'
 
 describe('Core Utility Functions', () => {
   describe('randInt', () => {

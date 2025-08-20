@@ -59,7 +59,7 @@ npx eas build --platform ios
 ## Architecture
 
 - `App.tsx` - Main game component with React Native UI
-- `src/gameLogic.ts` - Pure game logic ported from web version
+- `./gameLogic.ts` - Pure game logic ported from web version
 - Uses AsyncStorage for persistent level/streak data
 - Touch-optimized layout with responsive buttons
 

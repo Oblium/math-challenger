@@ -66,7 +66,7 @@ For detailed Android build instructions, see [`android-app/INSTRUCTIONS_APP.md`]
 
 ## Technical Details
 
-- **Shared Logic:** All game mechanics are in `common/src/gameLogic.ts`
+- **Shared Logic:** All game mechanics are in `android-app/gameLogic.ts`
 - **Web:** React 18 + TypeScript + Vite with hash routing
 - **Android:** React Native + Expo with AsyncStorage persistence
 - **Styling:** Dark theme optimized for both web and mobile

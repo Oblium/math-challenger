@@ -21,13 +21,13 @@ This document summarizes the current state of the project and outlines opportuni
 - UI: React Native components with StyleSheet
 
 ### Shared
-- Game Logic: Pure TypeScript functions in `common/src/gameLogic.ts`
+- Game Logic: Pure TypeScript functions in `android-app/gameLogic.ts`
 - Types: Shared type definitions across platforms
 
 ## App Structure
 
 ### Project Root
-- `common/src/gameLogic.ts`: Shared game logic and types
+- `android-app/gameLogic.ts`: Shared game logic and types
 - `README.md`: Multi-platform documentation
 
 ### Web App (`src/`)
@@ -107,7 +107,7 @@ Notes on static hosting and local file usage:
 ## Architectural Notes
 
 ### Shared Architecture
-- **Pure Game Logic:** All game mechanics extracted to `common/src/gameLogic.ts`
+- **Pure Game Logic:** All game mechanics extracted to `android-app/gameLogic.ts`
 - **Platform-Agnostic:** Core functions work identically on web and mobile
 - **Type Safety:** Shared TypeScript types ensure consistency
 
