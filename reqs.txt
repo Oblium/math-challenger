@@ -1,7 +1,0 @@
-Create a frontend application (typescript, react, react-router) that:
- - generates a random addition of 2 numbers (both between 0 and 49)
- - shows the operation to the customer (top half of the screen, centered)
- - at the bottom half, it show 3 possible solutions, 1 of them being correct
- - when the customer clicks on one solution
-	 - if it's correct: show positive feedback, generate another out operation
-	 - if it's wrong: show negative feedback, disable the possible solution just clicked (graying it out)
